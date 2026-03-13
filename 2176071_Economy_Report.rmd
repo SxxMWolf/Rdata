@@ -1,0 +1,229 @@
+---
+title: "2176071_Economy_Report"
+author: "2176071 김수민"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{fontspec}
+  - \setmainfont{AppleGothic}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(dplyr)
+library(showtext)
+library(tidyr)
+# 한글 폰트 설정
+font_add_google("Nanum Gothic", "nanum")
+showtext_auto()
+```
+
+## 1. 개요 및 분석 목적
+본 보고서는 2026년 3월 11일 연합뉴스 기사를 바탕으로 국내 증시와 환율 변화를 분석한 것이다. 최근 주요 기업들이 발표한 자사주 소각 계획이 침체된 시장에 불어넣는 활력과 주주 환원 정책이라는 제도적 변화가 실제 지수 상승 및 투자자 심리에 기여하는 정도를 파악하고자 한다. 분석에는 코스피/코스닥 지수, 투자주체별 순매수, 원-달러 환율 및 주요 기업의 상승률 데이터를 활용하였다. 이를 통해 향후 시장의 향방을 가늠해보고자 하는 것이 이번 분석의 핵심 목적이다.
+
+## 2. 코스피 시장 동향 분석
+
+```{r, echo=FALSE}
+# 데이터 통합 관리
+kospi <- data.frame(
+  date = as.Date(c("2026-03-11","2026-03-10","2026-03-09","2026-03-06","2026-03-05",
+                   "2026-03-04","2026-03-03","2026-02-27","2026-02-26","2026-02-25")),
+  close = c(5609.95,5532.59,5251.87,5584.87,5583.90,5093.54,5791.91,6244.13,6307.27,6083.86),
+  rate = c(1.40,5.35,-6.77,0.02,9.63,-15.89,-8.47,-1.02,3.67,1.91),
+  volume = c(1050946,923210,1026238,1223020,1660710,1637606,1227193,1166058,1409623,1415255),
+  trading_value = c(26619234,28713303,33163873,31402462,45308990,62882735,52800573,54939339,38930015,35284563),
+  personal = c(-5086,-18340,46242,29488,18228,796,57974,62496,6498,2307),
+  foreign = c(-2563,10283,-31735,-19418,-1446,2303,-51487,-70528,-21135,-13082),
+  institution = c(7821,9164,-15441,-11142,-17186,-5978,-8859,5666,12569,14701)
+) %>% arrange(date)
+```
+
+### 2.1. 코스피 종가 추이 분석
+코스피 지수는 3월 초의 극심한 변동성을 뒤로하고, '자사주 소각'이라는 강력한 정책적 호재를 바탕으로 완만하지만 견조한 회복세를 보이고 있다. 이는 단순한 기술적 반등을 넘어 시장 체질 개선에 대한 기대감이 반영된 결과로 풀이된다.
+
+```{r, echo=FALSE, fig.height=2.0, fig.width=8}
+ggplot(kospi, aes(x=date, y=close)) +
+  geom_line(color="#2980b9", size=1) +
+  geom_point(color="#c0392b") +
+  geom_text(aes(label=round(close,1)), vjust=-0.8, size=3) +
+  labs(title="코스피 종가 추이", x="날짜", y="지수") +
+  theme_minimal(base_family = "nanum")
+```
+
+위 그래프는 최근 10거래일 동안의 코스피 지수 변화를 나타낸다. 3월 초 급락 이후 자사주 소각 정책 발표를 계기로 반등 흐름이 나타났다.
+
+### 2.2. 코스피 일별 등락률 분석
+3월 10일 대규모 상승(+5.35%) 이후 11일에도 견조한 흐름을 유지하며 시장의 하방 경직성을 확보하였다.
+
+```{r, echo=FALSE, fig.height=2.0, fig.width=8}
+ggplot(kospi, aes(x=date, y=rate)) +
+  geom_bar(stat="identity", fill="#f39c12") +
+  geom_text(aes(label=paste0(ifelse(rate>0,"+",""),round(rate,2),"%")), vjust=-0.5, size=3) +
+  labs(title="코스피 일별 등락률", x="날짜", y="등락률 (%)") +
+  theme_minimal(base_family = "nanum")
+```
+
+위 그래프는 코스피의 일별 등락률을 보여준다. 특정 일자의 급등 이후 상승세를 유지하며 시장이 안정화되는 과정을 확인할 수 있다.
+
+### 2.3. 거래대금 및 거래량 변화 분석
+주요 기업들의 소각 발표와 함께 거래가 활발해지며 시장 활력이 개선되고 투자 심리가 회복되는 신호를 보내고 있다.
+
+### [표 1: 거래량 및 거래대금 상세 지표]
+```{r, echo=FALSE}
+formatted_kospi <- kospi %>%
+  mutate(
+    volume = format(volume, big.mark=","),
+    trading_value = format(trading_value, big.mark=",")
+  ) %>%
+  select(date, volume, trading_value)
+
+knitr::kable(formatted_kospi, 
+             col.names = c("날짜", "거래량", "거래대금 (억 원)"),
+             caption = "거래량 및 거래대금 상세 지표")
+```
+
+### 2.4. 투자주체별 순매수 분석
+기관 투자자가 연일 매수 우위를 점하며 지수 상승의 든든한 버침목 역할을 하는 가운데, 개인의 매도세가 진정되는 구간이 관찰된다.
+
+```{r, echo=FALSE, fig.height=2.0, fig.width=8}
+kospi_long <- kospi %>% 
+  select(date, personal, foreign, institution) %>% 
+  pivot_longer(-date, names_to="investor", values_to="value")
+
+ggplot(kospi_long, aes(x=date, y=value, fill=investor)) +
+  geom_bar(stat="identity", position="dodge") +
+  scale_fill_manual(values=c(
+    personal="#3498db",
+    foreign="#e74c3c",
+    institution="#2ecc71"
+  )) +
+  labs(title="코스피 투자주체별 순매수 추이", x="날짜", y="순매수 (억 원)") +
+  theme_minimal(base_family = "nanum")
+```
+
+기관, 외국인, 개인 투자자들의 매매 동향을 비교한 결과, 특정 주체의 매수세가 지수 지지에 기여하고 있음을 알 수 있다.
+
+
+
+## 3. 코스닥(KOSDAQ) 시장 동향 분석
+
+```{r, echo=FALSE}
+kosdaq <- data.frame(
+  date = as.Date(c("2026-03-11","2026-03-10","2026-03-09","2026-03-06","2026-03-05",
+                   "2026-03-04","2026-03-03","2026-02-27","2026-02-26","2026-02-25")),
+  close = c(1136.83,1137.68,1102.28,1154.67,1116.41,978.44,1137.70,1192.78,1188.15,1165.25),
+  rate = c(-0.07,3.21,-4.99,3.43,14.10,-19.44,-5.09,0.39,1.97,0.02),
+  personal = c(2542,136,-5065,-800,-15514,-12030,-7614,-4724,-5459,3906),
+  foreign = c(-812,-4021,-5389,-3862,8322,11703,5934,623,4247,-2159),
+  institution = c(-1267,4298,447,4761,7393,323,2388,4460,1901,-1277)
+) %>% arrange(date)
+```
+
+### 3.1. 코스닥 지수 추이 분석
+코스닥 역시 코스피와 동조화되며 1,160선 회복을 시도 중이다. 중소형 성장주보다는 실적 우량주 위주의 매수세가 유입되고 있다.
+
+```{r, echo=FALSE, fig.height=2.0, fig.width=8}
+ggplot(kosdaq, aes(x=date, y=close)) +
+  geom_line(color="#27ae60", size=1) +
+  geom_point(color="#2c3e50") +
+  geom_text(aes(label=round(close,2)), vjust=-0.8, size=3) +
+  labs(title="코스닥 종가 추이", x="날짜", y="지수") +
+  theme_minimal(base_family = "nanum")
+```
+
+코스닥 지수 역시 코스피와 유사한 회복 탄력성을 보이며 동조화 현상을 나타내고 있다.
+
+### 3.2. 투자주체별 순매수 분석
+개인과 기관이 연일 동반 순매수하며 코스닥 지수의 하방을 지지하고 있는 모습이다.
+
+```{r, echo=FALSE, fig.height=2.0, fig.width=8}
+kosdaq_long <- kosdaq %>% 
+  select(date, personal, foreign, institution) %>% 
+  pivot_longer(-date, names_to="investor", values_to="value")
+
+ggplot(kosdaq_long, aes(x=date, y=value, fill=investor)) +
+  geom_bar(stat="identity", position="dodge") +
+  scale_fill_manual(values=c(
+    personal="#3498db",
+    foreign="#e74c3c",
+    institution="#2ecc71"
+  )) +
+  labs(title="코스닥 투자주체별 순매수 추이", x="날짜", y="순매수 (억 원)") +
+  theme_minimal(base_family = "nanum")
+```
+
+코스닥 시장에서의 투자자별 수급 불균형이 해소되며 지수 하방 경직성이 강화되는 추세이다.
+
+## 4. 환율 변동 분석
+
+### 4.1. 원-달러 환율 종가 추이 분석
+증시 급등락과 유가 변동 속에서도 원-달러 환율은 점진적으로 안정화되며 1,460원 수준을 가리키고 있다.
+
+```{r, echo=FALSE}
+usd_krw <- data.frame(
+  date = as.Date(c("2026-03-11","2026-03-10","2026-03-09","2026-03-06","2026-03-05",
+                   "2026-03-04","2026-03-03","2026-02-27","2026-02-26","2026-02-25")),
+  close = c(1476.10,1475.50,1467.50,1485.00,1479.00,1463.50,1480.00,1466.50,1432.50,1427.50),
+  rate = c(0.04,0.55,-1.18,0.41,1.06,-1.11,0.92,2.37,0.35,-1.04)
+) %>% arrange(date)
+```
+
+### [표 2: 환율 및 원유 변동성 지표]
+```{r, echo=FALSE}
+knitr::kable(usd_krw, 
+             col.names = c("날짜", "종가 (KRW)", "등락률 (%)"),
+             caption = "환율 및 원유 변동성 지표")
+```
+
+### 4.2. 환율 등락률 분석
+3월 9일의 큰 폭의 하락 이후 일시적 반등을 보였으나, 장기적으로는 하향 안정화가 기대된다.
+
+### 4.3. 환율 변동과 증시 관계
+환율 하락은 외국인 투자자의 환차손 우려를 줄여 국내 증시의 매수세를 유입시키는 긍정적 촉매제 역할을 한다.
+
+
+
+## 5. 주요 기업 주가 상승 분석
+
+### 5.1. 자사주 소각 발표 기업 분석
+- **삼성전자 (+3%)**: 16조 원 규모의 소각 계획을 통해 주주 가치 제고 의지를 보였다.
+- **SK하이닉스 (+3%)**: 4조 원의 소각 발표로 시장의 신뢰를 확보하였다.
+
+### 5.2. 관련 기업 상승 효과 분석
+- **현대차 (+4%)**: 대형주로서 동반 상승 랠리에 합류하며 강세를 보였다.
+- **KCC (+10%) / 삼성생명 (+8%) / SK (+14%)**: 자사주 소각의 직접적인 수혜를 입거나 대주주인 계열사들의 가치가 재평가되며 급등하였다.
+- **미래에셋증권 (+15%)**: 시장 활성화에 따른 직접 수혜를 입으며 기록적인 상승을 기록하였다.
+
+```{r, echo=FALSE, fig.height=3, fig.width=8}
+company <- c("삼성전자","SK하이닉스","현대차","KCC","미래에셋증권")
+rise <- c(3,3,4,10,15)
+stock_df <- data.frame(company, rise)
+
+ggplot(stock_df, aes(x=reorder(company, rise), y=rise, fill=company)) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  labs(title="주요 기업 상승률 분석", x="기업", y="상승률 (%)") +
+  theme_minimal(base_family = "nanum") +
+  theme(legend.position="none") +
+  scale_fill_brewer(palette = "Set2")
+
+```
+
+## 6. 종합 분석 및 시사점
+
+### 6.1. 자사주 소각 정책이 증시에 미친 영향
+자사주 소각은 단순한 이벤트가 아닌, 국내 증시의 고질적인 문제인 저평가 해소를 위한 실질적인 신호탄으로 기능하고 있다.
+
+### 6.2. 투자자별 매매 패턴 분석
+기관의 주도하에 개인과 외국인의 수급이 순차적으로 유입되는 양상을 보이고 있다.
+
+### 6.3. 환율 및 외부 변수의 영향
+유가의 안정과 환율의 하향 조정이 증시 반등의 기초 체력을 강화해주고 있다.
+
+### 6.4. 향후 시장 전망 및 시사점
+기업들의 주주 친화 정책이 지속된다면, 국내 증시는 새로운 고점을 향한 추세적 우상향을 이어갈 것으로 전망된다.
+
+따라서 자사주 소각 정책은 단기적인 주가 상승 요인뿐만 아니라 국내 증시의 구조적인 저평가 문제를 완화하는 중요한 정책적 수단으로 기능할 것으로 보인다.

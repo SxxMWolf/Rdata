@@ -2,12 +2,7 @@
 title: "Oil Related Stocks Analysis"
 author: "2176071 김수민"
 date: "`r Sys.Date()`"
-output:
-  pdf_document:
-    latex_engine: xelatex
-header-includes:
-  - \usepackage{fontspec}
-  - \setmainfont{AppleGothic}
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -65,11 +60,12 @@ ggplot(data, aes(x=reorder(company, decline), y=decline, fill=type)) +
   geom_bar(stat="identity") +
   coord_flip() +
   labs(
-    title="Oil Related Stock Decline Rate",
-    x="Company",
-    y="Decline (%)"
+    title="정유주 및 관련 ETN 하락률",
+    x="종목명",
+    y="하락률 (%)",
+    fill="구분"
   ) +
-  theme_minimal()
+  theme_minimal(base_family = "nanum")
 ```
 
 ```{r}
@@ -82,11 +78,12 @@ avg_data
 ggplot(avg_data, aes(x=type, y=avg_decline, fill=type)) +
   geom_bar(stat="identity") +
   labs(
-    title="Average Decline: Company vs ETN",
-    x="Type",
-    y="Average Decline (%)"
+    title="기업과 ETN의 평균 하락률 비교",
+    x="구분",
+    y="평균 하락률 (%)",
+    fill="구분"
   ) +
-  theme_minimal()
+  theme_minimal(base_family = "nanum")
 ```
 
 ```{r}
@@ -126,14 +123,14 @@ soil
 ```{r}
 #5. S-Oil 주가 추이 그래프
 ggplot(soil, aes(x=date, y=price)) +
-  geom_line(size=1) +
+  geom_line(linewidth=1) +
   geom_point() +
   labs(
-    title="S-Oil Stock Price Trend",
-    x="Date",
-    y="Price (KRW)"
+    title="S-Oil 주가 추이",
+    x="날짜",
+    y="주가 (KRW)"
   ) +
-  theme_minimal()
+  theme_minimal(base_family = "nanum")
 ```
 
 ```{r}
@@ -173,14 +170,14 @@ hung
 ```{r}
 #7. 흥구석유 주가 추이 그래프
 ggplot(hung, aes(x=hung_date, y=hung_price)) +
-  geom_line(size=1) +
+  geom_line(linewidth=1) +
   geom_point() +
   labs(
-    title="Hunggu Petroleum Stock Price Trend",
-    x="Date",
-    y="Price (KRW)"
+    title="흥구석유 주가 추이",
+    x="날짜",
+    y="주가 (KRW)"
   ) +
-  theme_minimal()
+  theme_minimal(base_family = "nanum")
 ```
 
 ```{r}
@@ -221,12 +218,12 @@ jung
 ```{r}
 #9. 중앙에너비스 주가 추이 그래프
 ggplot(jung, aes(x=jung_date, y=jung_price)) +
-  geom_line(size=1) +
+  geom_line(linewidth=1) +
   geom_point() +
   labs(
-    title="Jungang Enervis Stock Price Trend",
-    x="Date",
-    y="Price (KRW)"
+    title="중앙에너비스 주가 추이",
+    x="날짜",
+    y="주가 (KRW)"
   ) +
-  theme_minimal()
+  theme_minimal(base_family = "nanum")
 ```
