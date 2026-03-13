@@ -1,0 +1,232 @@
+---
+title: "Oil Related Stocks Analysis"
+author: "2176071 김수민"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{fontspec}
+  - \setmainfont{AppleGothic}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(showtext)
+font_add_google("Nanum Gothic", "nanum")
+showtext_auto()
+```
+
+```{r}
+#1. 기사 종목 데이터
+company <- c(
+"S-Oil",
+"중앙에너비스",
+"흥구석유",
+"극동유화",
+"SK가스",
+"대성산업",
+"한투 레버리지WTI ETN",
+"삼성 레버리지WTI ETN",
+"미래에셋 레버리지WTI ETN",
+"신한 WTI ETN",
+"삼성 블룸버그 WTI ETN"
+)
+
+decline <- c(
+-6.45,
+-16.05,
+-14.85,
+-9.78,
+-5.19,
+-4.01,
+-31.60,
+-32.09,
+-31.79,
+-18.73,
+-18.29
+)
+
+type <- c(
+"기업","기업","기업","기업","기업","기업",
+"ETN","ETN","ETN","ETN","ETN"
+)
+
+data <- data.frame(company, decline, type)
+
+data
+```
+
+```{r}
+#2. 종목별 하락률 그래프
+ggplot(data, aes(x=reorder(company, decline), y=decline, fill=type)) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  labs(
+    title="Oil Related Stock Decline Rate",
+    x="Company",
+    y="Decline (%)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#3. 기업 vs ETN 평균 하락률
+avg_data <- data %>%
+  group_by(type) %>%
+  summarise(avg_decline = mean(decline))
+
+avg_data
+ggplot(avg_data, aes(x=type, y=avg_decline, fill=type)) +
+  geom_bar(stat="identity") +
+  labs(
+    title="Average Decline: Company vs ETN",
+    x="Type",
+    y="Average Decline (%)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#4. S-Oil 주가 데이터
+date <- c(
+"2026-02-25",
+"2026-02-26",
+"2026-02-27",
+"2026-03-03",
+"2026-03-04",
+"2026-03-05",
+"2026-03-06",
+"2026-03-09",
+"2026-03-10",
+"2026-03-11"
+)
+
+price <- c(
+112600,
+113700,
+110000,
+141300,
+126500,
+134700,
+129700,
+128700,
+117900,
+114600
+)
+
+soil <- data.frame(date, price)
+soil$date <- as.Date(soil$date)
+
+soil
+```
+
+```{r}
+#5. S-Oil 주가 추이 그래프
+ggplot(soil, aes(x=date, y=price)) +
+  geom_line(size=1) +
+  geom_point() +
+  labs(
+    title="S-Oil Stock Price Trend",
+    x="Date",
+    y="Price (KRW)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#6. 흥구석유 주가 데이터
+hung_date <- c(
+"2026-02-25",
+"2026-02-26",
+"2026-02-27",
+"2026-03-03",
+"2026-03-04",
+"2026-03-05",
+"2026-03-06",
+"2026-03-09",
+"2026-03-10",
+"2026-03-11"
+)
+
+hung_price <- c(
+21100,
+19230,
+17610,
+22850,
+29700,
+32700,
+27600,
+27950,
+25900,
+25500
+)
+
+hung <- data.frame(hung_date, hung_price)
+hung$hung_date <- as.Date(hung$hung_date)
+
+hung
+```
+
+```{r}
+#7. 흥구석유 주가 추이 그래프
+ggplot(hung, aes(x=hung_date, y=hung_price)) +
+  geom_line(size=1) +
+  geom_point() +
+  labs(
+    title="Hunggu Petroleum Stock Price Trend",
+    x="Date",
+    y="Price (KRW)"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#8. 중앙에너비스 주가 데이터
+jung_date <- c(
+"2026-02-25",
+"2026-02-26",
+"2026-02-27",
+"2026-03-03",
+"2026-03-04",
+"2026-03-05",
+"2026-03-06",
+"2026-03-09",
+"2026-03-10",
+"2026-03-11"
+)
+
+jung_price <- c(
+19750,
+20800,
+19440,
+25250,
+32800,
+30850,
+29150,
+32400,
+29350,
+28900
+)
+
+jung <- data.frame(jung_date, jung_price)
+
+jung$jung_date <- as.Date(jung$jung_date)
+
+jung
+```
+
+```{r}
+#9. 중앙에너비스 주가 추이 그래프
+ggplot(jung, aes(x=jung_date, y=jung_price)) +
+  geom_line(size=1) +
+  geom_point() +
+  labs(
+    title="Jungang Enervis Stock Price Trend",
+    x="Date",
+    y="Price (KRW)"
+  ) +
+  theme_minimal()
+```

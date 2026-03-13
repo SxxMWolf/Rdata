@@ -1,0 +1,153 @@
+---
+title: "2176701 Economy"
+author: "2176071 김수민"
+date: "`r Sys.Date()`"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{fontspec}
+  - \setmainfont{AppleGothic}
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(showtext)
+library(tidyr)
+font_add_google("Nanum Gothic", "nanum")
+showtext_auto()
+```
+
+```{r}
+#1. 코스피 지수
+kospi <- data.frame(
+  date = as.Date(c("2026-03-11","2026-03-10","2026-03-09","2026-03-06","2026-03-05",
+                   "2026-03-04","2026-03-03","2026-02-27","2026-02-26","2026-02-25")),
+  close = c(5609.95,5532.59,5251.87,5584.87,5583.90,5093.54,5791.91,6244.13,6307.27,6083.86),
+  rate = c(1.40,5.35,-6.77,0.02,9.63,-15.89,-8.47,-1.02,3.67,1.91),
+  volume = c(1050946,923210,1026238,1223020,1660710,1637606,1227193,1166058,1409623,1415255),
+  trading_value = c(26619234,28713303,33163873,31402462,45308990,62882735,52800573,54939339,38930015,35284563),
+  personal = c(-5086,-18340,46242,29488,18228,796,57974,62496,6498,2307),
+  foreign = c(-2563,10283,-31735,-19418,-1446,2303,-51487,-70528,-21135,-13082),
+  institution = c(7821,9164,-15441,-11142,-17186,-5978,-8859,5666,12569,14701)
+) %>% arrange(date)
+```
+
+```{r}
+#1-1. 종가 추이
+ggplot(kospi, aes(x=date, y=close)) +
+  geom_line(color="blue", size=1) +
+  geom_point(color="red") +
+  geom_text(aes(label=round(close,1)), vjust=-0.8, size=3) +
+  labs(title="코스피 종가 추이", x="날짜", y="지수") +
+  theme_minimal()
+```
+
+```{r}
+#1-2. 일별 등락률
+ggplot(kospi, aes(x=date, y=rate)) +
+  geom_bar(stat="identity", fill="orange") +
+  geom_text(aes(label=paste0(ifelse(rate>0,"+",""),round(rate,2),"%")), vjust=-0.5, size=3) +
+  labs(title="코스피 일별 등락률", x="날짜", y="등락률 (%)") +
+  theme_minimal()
+```
+
+```{r}
+#1-3. 거래대금과 거래량
+ggplot(kospi, aes(x=date)) +
+  geom_bar(aes(y=trading_value/1000), stat="identity", fill="lightblue") +
+  geom_line(aes(y=volume/10, group=1), color="red", size=1) +
+  scale_y_continuous(
+    name="거래대금 (백만원)",
+    sec.axis = sec_axis(~.*10, name="거래량 (천주)")
+  ) +
+  labs(title="거래대금 및 거래량 추이", x="날짜") +
+  theme_minimal()
+```
+
+```{r}
+#1-4. 투자주체별 순매수
+kospi_long <- kospi %>% 
+  select(date, personal, foreign, institution) %>% 
+  pivot_longer(-date, names_to="investor", values_to="value")
+
+ggplot(kospi_long, aes(x=date, y=value, fill=investor)) +
+  geom_bar(stat="identity", position="dodge") +
+  labs(title="개인/외국인/기관 순매수 추이", x="날짜", y="순매수 (억 원)") +
+  theme_minimal()
+```
+
+```{r}
+#2. 코스닥 지수
+kosdaq <- data.frame(
+  date = as.Date(c("2026-03-11","2026-03-10","2026-03-09","2026-03-06","2026-03-05",
+                   "2026-03-04","2026-03-03","2026-02-27","2026-02-26","2026-02-25")),
+  close = c(1136.83,1137.68,1102.28,1154.67,1116.41,978.44,1137.70,1192.78,1188.15,1165.25),
+  rate = c(-0.07,3.21,-4.99,3.43,14.10,-19.44,-5.09,0.39,1.97,0.02),
+  volume = c(1307017,984763,1044170,1033230,1044637,1454920,1290763,1262964,1449495,1512981),
+  trading_value = c(16592472,15061589,12382997,14491478,15594889,16587060,16896564,14846572,17973528,13456091),
+  personal = c(2542,136,-5065,-800,-15514,-12030,-7614,-4724,-5459,3906),
+  foreign = c(-812,-4021,-5389,-3862,8322,11703,5934,623,4247,-2159),
+  institution = c(-1267,4298,447,4761,7393,323,2388,4460,1901,-1277)
+) %>% arrange(date)
+```
+
+```{r}
+#2-1. 종가 추이
+ggplot(kosdaq, aes(x=date, y=close)) +
+  geom_line(color="green", size=1) +
+  geom_point(color="blue") +
+  geom_text(aes(label=round(close,2)), vjust=-0.8, size=3) +
+  labs(title="코스닥 종가 추이", x="날짜", y="지수") +
+  theme_minimal()
+```
+
+```{r}
+#2-2. 투자주체별 순매수
+kosdaq_long <- kosdaq %>% 
+  select(date, personal, foreign, institution) %>% 
+  pivot_longer(-date, names_to="investor", values_to="value")
+
+ggplot(kosdaq_long, aes(x=date, y=value, fill=investor)) +
+  geom_bar(stat="identity", position="dodge") +
+  labs(title="코스닥 개인/외국인/기관 순매수 추이", x="날짜", y="순매수 (억 원)") +
+  theme_minimal()
+```
+
+```{r}
+#3. 원-달러 환율
+usd_krw <- data.frame(
+  date = as.Date(c("2026-03-11","2026-03-10","2026-03-09","2026-03-06","2026-03-05",
+                   "2026-03-04","2026-03-03","2026-02-27","2026-02-26","2026-02-25")),
+  close = c(1476.10,1475.50,1467.50,1485.00,1479.00,1463.50,1480.00,1466.50,1432.50,1427.50),
+  rate = c(0.04,0.55,-1.18,0.41,1.06,-1.11,0.92,2.37,0.35,-1.04)
+)
+ggplot(usd_krw, aes(x=date, y=close)) +
+  geom_line(color="red", size=1) +
+  geom_point(color="darkred") +
+  geom_text(aes(label=round(close,2)), vjust=-0.8, size=3) +
+  labs(title="원-달러 환율 종가 추이", x="날짜", y="KRW/USD") +
+  theme_minimal()
+ggplot(usd_krw, aes(x=date, y=rate)) +
+  geom_bar(stat="identity", fill="orange") +
+  geom_text(aes(label=paste0(ifelse(rate>0,"+",""),round(rate,2),"%")), vjust=-0.5, size=3) +
+  labs(title="원-달러 환율 일별 등락률", x="날짜", y="등락률 (%)") +
+  theme_minimal()
+```
+
+```{r}
+#4. 주요 기업 주가 상승률
+company <- c("삼성전자","SK하이닉스","현대차","KCC","미래에셋증권")
+rise <- c(3,3,4,10,15) # 3월 11일 기준 상승률 (%)
+stock <- data.frame(company, rise)
+
+ggplot(stock, aes(x=reorder(company, rise), y=rise, fill=company)) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  labs(title="주요 기업 상승률", x="기업", y="상승률 (%)") +
+  theme_minimal() +
+  theme(legend.position="none")
+```
