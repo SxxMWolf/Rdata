@@ -1,6 +1,6 @@
 ---
 title: "2176071_Oil_Report"
-author: "2176071 김수민"
+author: "2176071KimSooMin"
 date: "`r Sys.Date()`"
 output:
   pdf_document:

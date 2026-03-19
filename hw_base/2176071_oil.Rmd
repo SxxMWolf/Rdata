@@ -1,6 +1,6 @@
 ---
 title: "Oil Related Stocks Analysis"
-author: "2176071 김수민"
+author: "2176071KimSooMin"
 date: "`r Sys.Date()`"
 output: html_document
 ---
